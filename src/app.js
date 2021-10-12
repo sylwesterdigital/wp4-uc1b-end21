@@ -30,6 +30,7 @@ var mC = new PIXI.Container();
 //var tempLOGO = PIXI.Sprite.from("/src/assets/5gtours.png")
 
 var canvasItems = []
+window.canvasItems = canvasItems;
 
 var paintingArea = new PIXI.Graphics();
 paintingArea.beginFill(cols_blue1);
@@ -209,13 +210,24 @@ function enableControls() {
         }
 
 
-        if (buttons && buttons.HOME == true) {
+        if (buttons.HOME == true) {
             clearAllCanvas();
         }
 
-        if (buttons && buttons.A == true) {
+        if (buttons.A == true) {
             leftRightSelector(1)
         }
+
+
+        if (buttons.ONE == true) {
+            app.playing = true;
+        }
+
+        if (buttons.TWO == true) {
+            app.playing = false;
+        }
+
+
 
 /*        if (buttons && buttons.DPAD_RIGHT == true) {
             leftRightSelector(1)
@@ -449,6 +461,8 @@ function initPixi() {
         resizeTo: window
     });
 
+    app.playing = false;
+
 
     // app.renderer.plugins.interaction.cursorStyles.default = "url('./src/assets/cursor/1/cursor_96.png'), auto";
     // app.renderer.plugins.interaction.cursorStyles.hover = "url('./src/assets/cursor/1/cursor_96.png'), auto";
@@ -500,11 +514,20 @@ function initPixi() {
 
 
             texture = textures[textureId]
+
             svg = new PIXI.Sprite(texture);
             svg.scale.set(0.45, 0.45);
             svg.x = x
             svg.y = y
+
+            svg.speedX = Math.random()*3 - Math.random()*3
+            svg.speedY = Math.random()*3 - Math.random()*3
+
             svg.angle = vBrush.angle;
+
+
+
+
         }
 
         svg.anchor.set(0.5);
@@ -761,6 +784,57 @@ function initPixi() {
 
 
     changeTool("paint");
+
+
+    app.ticker.add((delta) => {
+
+
+
+
+          if(app.playing) {
+
+              
+
+
+            canvasItems.forEach(item => {
+
+
+
+                 if(item.x > wapp.W) {
+                     item.x = -item.width;
+                 }
+
+                
+                if(item.x < -item.width) {
+                    item.x = wapp.W;
+                }
+
+                if(item.y > wapp.H) {
+                    item.y = -item.height;
+                }
+                if(item.y < -wapp.H) {
+                    item.y = wapp.H +item.height;
+                }
+
+
+                item.x += item.speedX;
+                item.y += item.speedY;
+
+                item.angle += 0.1
+
+                console.log(wapp.W,item.x)
+
+
+            });
+
+
+          }
+
+
+    })
+
+
+
 
 }
 

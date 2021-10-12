@@ -36,8 +36,20 @@ button {
     border-color: rgba(255,255,255,1);
     display: inline-block;
     border: 4px solid;
-    transition: all 0.4s ease 0s;
+    transition: all 0.4s ease 0s;    
+  animation-name: blinking;
+  animation-duration: 10s;
+  animation-iteration-count: 100;
 }
+
+@keyframes blinking {
+  50% {
+    border-color: rgba(255,255,255,0);
+  }
+}
+
+
+
 
 .bu:hover {
     background: #FF0000;
