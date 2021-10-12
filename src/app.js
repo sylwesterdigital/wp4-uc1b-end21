@@ -18,7 +18,7 @@ let w = window;
 const cols_blue1 = 0x132CAD
 const cols_grey = 0x5c5c5c
 
-const selectorSpeed = 0.01;
+const selectorSpeed = 0.02;
 let selectorKey = 0;
 
 console.log("wapp", wapp)
@@ -47,9 +47,10 @@ vBrush.zIndex = 10000000;
 
 
 // Selected Brush
-var sBrush = PIXI.Sprite.from("./assets/shapes/1.png")
+var sBrush = PIXI.Sprite.from("./assets/shapes/01.png")
 sBrush.zIndex = 50000;
-sBrush.scale.set(0.25)
+sBrush.scale.set(0.4)
+sBrush.anchor.set(0.5)
 
 window.sBrush = sBrush
 
@@ -70,6 +71,7 @@ var device = null; //bluetooth connection
 var wiimote = null; //wiimote
 var buttonState = {
     A: false,
+    B: false,
     MINUS: false,
     DPAD_LEFT: false,
     DPAD_RIGHT: false
@@ -181,25 +183,27 @@ function enableControls() {
         }
 
 
-        if (buttons.A == true) {
+        // B is in the belly of the controller
+        //
+        if (buttons.B == true) {
 
             var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
-            if (buttonState.A == false) {
+            if (buttonState.B == false) {
 
                 a.emit("pointertap")
                 a.emit("mousedown")
 
-                buttonState.A = true
+                buttonState.B = true
             }
 
             a.emit("mousemove")
         }
 
-        if (buttons.A == false && buttonState.A == true) {
+        if (buttons.B == false && buttonState.B == true) {
             var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
-            buttonState.A = false
+            buttonState.B = false
             a.emit("mouseup")
 
         }
@@ -209,13 +213,13 @@ function enableControls() {
             clearAllCanvas();
         }
 
-        if (buttons && buttons.DPAD_LEFT == true) {
-            leftRightSelector(-1)
-        }
-
-        if (buttons && buttons.DPAD_RIGHT == true) {
+        if (buttons && buttons.A == true) {
             leftRightSelector(1)
         }
+
+/*        if (buttons && buttons.DPAD_RIGHT == true) {
+            leftRightSelector(1)
+        }*/
 
 
 
@@ -255,8 +259,11 @@ function enableControls() {
         vBrush.y = pos[0]["y"] //max 760
 
 
-        sBrush.x = vBrush.x - 35;
-        sBrush.y = vBrush.y - 35;
+        sBrush.x = vBrush.x;
+        sBrush.y = vBrush.y;
+
+        sBrush.angle = vBrush.angle;//90*(Math.PI/180)
+
 
 
         //document.getElementById("IRdebug").innerHTML = JSON.stringify(pos, null, true)
@@ -271,12 +278,13 @@ function enableControls() {
 
 function initController() {
 
-    console.log("initController - toolbox")
+    console.log("initController - buttonsW")
 
-    var toolbox = document.getElementById("toolbox")
+    var buttonsW = document.getElementById("buttonsW")
 
     var conBut = document.createElement("button");
-    conBut.innerText = " + ";
+
+    conBut.innerText = "+ CONNECT WiiMOTE";
     conBut.className = "bu";
     conBut.id = "request-hid-device"
 
@@ -289,15 +297,19 @@ function initController() {
 
             device = devices[0];
             wiimote = new WIIMote(device)
+            console.log("device",device)
+            document.getElementById("buttons").style.display = "none";
 
         } catch (error) {
             console.log("An error occurred.", error);
+
         }
 
         if (!device) {
             console.log("No device was selected.");
 
         } else {
+
             console.log(`HID: ${device.productName}`);
 
             setTimeout(() => {
@@ -311,7 +323,12 @@ function initController() {
         }
     }
 
-    toolbox.appendChild(conBut)
+    buttonsW.appendChild(conBut)
+
+
+    window.navigator.hid.addEventListener('connect', ({device}) => {
+      console.log(`HID connected: ${device.productName}`);
+    });    
 
     // let virtControl = document.createElement("button");
 
@@ -327,7 +344,7 @@ function initController() {
     //         }, 2000);
     //     }
 
-    // toolbox.appendChild(virtControl)
+    // buttonsW.appendChild(virtControl)
 
 
     // var clearBtn = document.createElement("button");
@@ -348,7 +365,7 @@ function initController() {
     //         // app.stage.addChild(mC);
     //     };
 
-    // toolbox.appendChild(clearBtn)
+    // buttonsW.appendChild(clearBtn)
 
 }
 
@@ -454,7 +471,7 @@ function initPixi() {
 
     /* Loading assets, images, textures ... */
 
-    const texture = PIXI.Texture.from('./assets/shapes/1.png');
+    const texture = PIXI.Texture.from('./assets/shapes/01.png');
 
     const textures = []
     window.textures = textures;
@@ -484,9 +501,10 @@ function initPixi() {
 
             texture = textures[textureId]
             svg = new PIXI.Sprite(texture);
-            svg.scale.set(0.3, 0.3)
+            svg.scale.set(0.45, 0.45);
             svg.x = x
             svg.y = y
+            svg.angle = vBrush.angle;
         }
 
         svg.anchor.set(0.5);
