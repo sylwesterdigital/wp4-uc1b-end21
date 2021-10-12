@@ -25,6 +25,7 @@ button {
 }
 
 .bu {
+    font-size: 2rem;
     color: #fff !important;
     text-transform: uppercase;
     text-decoration: none;
@@ -39,29 +40,29 @@ button {
 
 .bu:hover {
     background: #FF0000;
-    -webkit-box-shadow: 0px 5px 40px -10px rgba(0,0,0,0.57);
-    -moz-box-shadow: 0px 5px 40px -10px rgba(0,0,0,0.57);
-    box-shadow: 5px 40px -10px rgba(0,0,0,0.57);
+    -webkit-box-shadow: 0px 5px 40px -10px rgba(0, 0, 0, 0.57);
+    -moz-box-shadow: 0px 5px 40px -10px rgba(0, 0, 0, 0.57);
+    box-shadow: 5px 40px -10px rgba(0, 0, 0, 0.57);
     transition: all 0.4s ease 0s;
 }
 
-canvas{
+canvas {
     border: 0;
     padding: 0;
     margin: 0;
     position: absolute;
     left: 0;
-    top: 0;    
-/*    border: 5px solid black;
+    top: 0;
+    /*    border: 5px solid black;
     padding: 10px;
     margin-left: 50px;*/
 }
 
 #toolbox {
     position: absolute;
-    top:  0px;
+    top: 0px;
     right: 0px;
-    background-color: rgba(0,0,0,0.75);
+    background: rgba(0, 0, 0, 0);
     color: white;
     max-width: 140px;
     padding: 0.3rem;
@@ -75,21 +76,32 @@ canvas{
     bottom: 0px;
     color: white;
     max-width: 300px;
-    background-color: rgba(0,0,0,0.75);
+    background: rgba(0, 0, 0, 0.25);
     padding: 0.3rem;
+    margin: 0.3rem;
+    ;
 }
 
 #request-device {
     position: absolute;
     left: 0;
-    top:  0;
+    top: 0;
     display: none;
 }
 
 #get-device {
     position: absolute;
     left: 0;
-    top:  0;
+    top: 0;
     display: none;
 }
 
+#ir {
+    position: absolute;
+    color: white;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.3rem;
+    margin: 0.3rem;
+    left: 0;
+    top: 0;
+}

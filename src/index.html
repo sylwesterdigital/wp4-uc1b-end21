@@ -3,41 +3,27 @@
 
 <head>
     <meta charset="utf-8">
-    <title>5G Tours: UC1.b demo</title>
+    <title>5G Tours: UC1.b demo - late 2021</title>
     <link rel="stylesheet" href="src/style.css">
-<!--     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.3/pixi.min.js"></script>
- --></head>
+</head>
 
 <body>
     <div id="screen"></div>
-
     <div id="toolbox">
         <div>
             <div id="buttons"></div>
         </div>
-        <div class="mt-2 max-w-4xl mx-auto px-8 py-4 bg-white dark:bg-gray-800 rounded-lg shadow-md align-center">
-            <pre id="IRdebug"></pre>
-        </div>
     </div>
-
     <div id="gyro">
-          <div id="accA">???</div>
-          <div id="accX">???</div>
-          <div id="accY">???</div>
-          <div id="accZ">???</div>
+        <div id="accA"></div>
+        <div id="accXYZ"></div>
         </ul>
     </div>
-
-
-
-<!--     <script src="src/thingy_support/js/dynamic-time-warping.min.js"></script>
-    <script type="module" src="src/main.js"></script>
- -->    
-
-
-<button id="request-device">USB</button>
-<button id="get-device">USB</button>
-
+    <div id="ir">
+        <div id="IRdebug"></div>
+    </div>
+    <button id="request-device">USB</button>
+    <button id="get-device">USB</button>
 </body>
 
 </html>

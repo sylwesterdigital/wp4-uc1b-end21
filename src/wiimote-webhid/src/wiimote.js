@@ -123,29 +123,29 @@ export default class WIIMote{
 
     initiateIR(dataType = IRDataType.EXTENDED, sensitivity = IRSensitivity.LEVEL_3, sensitivityBlock = IRSensitivity.BLOCK_3 ){
 
-        console.log("wiimote.initiateIR()");
+        //console.log("wiimote.initiateIR()");
 
-        console.log("Fire up the first camera pin")
+        //console.log("Fire up the first camera pin")
         this.sendReport(ReportMode.IR_CAMERA_ENABLE, [0x04])
 
-         console.log("// Fire up the second camera pin")
+         //console.log("// Fire up the second camera pin")
         this.sendReport(ReportMode.IR_CAMERA2_ENABLE, [0x04])
 
-         console.log("//Get register write permission")
+         //console.log("//Get register write permission")
         this.writeRegister(RegisterType.CONTROL, 0xb00030, [0x08])
 
-         console.log("//set sensitivity block part 1")
+         //console.log("//set sensitivity block part 1")
         this.writeRegister(RegisterType.CONTROL, 0xb00000, sensitivity)
     
-         console.log("//Set sensitivity block part 2")
+         //console.log("//Set sensitivity block part 2")
         this.writeRegister(RegisterType.CONTROL, 0xb0001a, sensitivityBlock)
 
-         console.log("//Set data mode number") 
+         //console.log("//Set data mode number") 
         this.writeRegister(RegisterType.CONTROL, 0xb00033, [dataType])
 
         this.writeRegister(RegisterType.CONTROL, 0xb00030, [0x08])
 
-         console.log("/// update data tracking mode")
+         //console.log("/// update data tracking mode")
         this.setDataTracking(DataReportMode.CORE_BUTTONS_ACCEL_IR)
 
 
@@ -249,7 +249,7 @@ export default class WIIMote{
     IRDecoder(data){
 
 
-        console.log("IRDecoder: ",data)
+        //console.log("IRDecoder: ",data)
 
         var tracked_objects = []
 
@@ -270,7 +270,7 @@ export default class WIIMote{
             }
         }
 
-        console.log("IRDecoder: tracked_objects", tracked_objects)
+        //console.log("IRDecoder: tracked_objects", tracked_objects)
 
         if(this.IrListener != null){
             this.IrListener(tracked_objects)
@@ -309,7 +309,7 @@ export default class WIIMote{
         ] = data;
 
         if(event.reportId == InputReport.STATUS){
-            console.log(data)
+            console.log('main listener received input from the Wiimote: data',data)
             this.setDataTracking(DataReportMode.CORE_BUTTONS_ACCEL_IR)
         }
 
