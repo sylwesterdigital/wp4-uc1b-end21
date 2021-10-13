@@ -254,6 +254,7 @@ export default class WIIMote{
         var tracked_objects = []
 
         for (let index = 0; index < 12; index+=3) {
+
             if(data[index] != 255 && data[index+1] != 255 && data[index+2] != 255){
                 var x = data[index]
                 var y = data[index+1]
@@ -268,6 +269,7 @@ export default class WIIMote{
                     s: size
                 })
             }
+            
         }
 
         //console.log("IRDecoder: tracked_objects", tracked_objects)
@@ -302,7 +304,11 @@ export default class WIIMote{
     // main listener received input from the Wiimote
     listener(event){
 
+
+        //console.log("event",event);
+
         var data = new Uint8Array(event.data.buffer);
+
         const [byte1, byte2,    // buttons
             accX, accY, accZ,   // ACC
             ir1, ir2, ir3, ir4, ir5, ir6, ir7, ir8, ir9, ir10, ir11, ir12   // IR Camera
@@ -314,6 +320,7 @@ export default class WIIMote{
         }
 
         this.BTNDecoder(byte1, byte2);
+
         this.ACCDecoder([accX, accY, accZ])
 
         this.IRDecoder([ir1, ir2, ir3, ir4, ir5, ir6, ir7, ir8, ir9, ir10, ir11, ir12])

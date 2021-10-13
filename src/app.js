@@ -18,7 +18,7 @@ let w = window;
 const cols_blue1 = 0x132CAD
 const cols_grey = 0x5c5c5c
 
-const selectorSpeed = 0.02;
+const selectorSpeed = 0.01;
 let selectorKey = 0;
 
 console.log("wapp", wapp)
@@ -39,7 +39,7 @@ paintingArea.endFill();
 paintingArea.zIndex = 1
 paintingArea.interactive = true
 
-var vBrush = PIXI.Sprite.from("./assets/brushes/brush5.png")
+var vBrush = PIXI.Sprite.from("./assets/brushes/brush6.png")
 vBrush.zIndex = 10000000;
 // vBrush.lineStyle(0);
 // vBrush.beginFill(0xFFFF0B, 0.5);
@@ -52,6 +52,9 @@ var sBrush = PIXI.Sprite.from("./assets/shapes/01.png")
 sBrush.zIndex = 50000;
 sBrush.scale.set(0.4)
 sBrush.anchor.set(0.5)
+sBrush.minScale = 0.1;
+sBrush.maxScale = 2;
+
 
 window.sBrush = sBrush
 
@@ -229,6 +232,18 @@ function enableControls() {
 
 
 
+
+        if (buttons.MINUS == true) {
+            textureScale(-1);
+        }
+
+        if (buttons.PLUS == true) {
+            textureScale(1);
+        }
+
+
+
+
 /*        if (buttons && buttons.DPAD_RIGHT == true) {
             leftRightSelector(1)
         }*/
@@ -287,6 +302,9 @@ function enableControls() {
 
 }
 
+window.enableControls = enableControls
+
+
 
 function initController() {
 
@@ -307,8 +325,14 @@ function initController() {
                 filters: [{ vendorId: 0x057e }],
             });
 
+
+
+
             device = devices[0];
             wiimote = new WIIMote(device)
+            window.wiimote = wiimote;
+
+            console.log("devices array:", devices)
             console.log("device",device)
             document.getElementById("buttons").style.display = "none";
 
@@ -338,9 +362,29 @@ function initController() {
     buttonsW.appendChild(conBut)
 
 
-    window.navigator.hid.addEventListener('connect', ({device}) => {
+/*    window.navigator.hid.addEventListener('connect', ({device}) => {
       console.log(`HID connected: ${device.productName}`);
-    });    
+    });   
+
+
+    window.navigator.hid.addEventListener('disconnect', ({device}) => {
+      console.log(`HID disconnected: ${device.productName}`);
+    });     
+
+
+    device.addEventListener("inputreport", event => {
+      const { data, device, reportId } = event;
+
+      // Handle only the Joy-Con Right device and a specific report ID.
+      if (device.productId !== 0x2007 && reportId !== 0x3f) return;
+
+      const value = data.getUint8(0);
+      if (value === 0) return;
+
+      const someButtons = { 1: "A", 2: "X", 4: "B", 8: "Y" };
+      console.log(`User pressed button ${someButtons[value]}.`);
+    });*/
+
 
     // let virtControl = document.createElement("button");
 
@@ -524,7 +568,7 @@ function initPixi() {
             svg.speedY = Math.random()*3 - Math.random()*3
 
             svg.angle = vBrush.angle;
-
+            svg.scale.set(sBrush.scale.x, sBrush.scale.y);
 
 
 
@@ -557,7 +601,7 @@ function initPixi() {
         let v = Math.floor(selectorKey);
 
 
-        if (v > textures.length) {
+        if (v >= textures.length) {
             v = 1;
             selectorKey = v;
         }
@@ -579,6 +623,40 @@ function initPixi() {
     w.leftRightSelector = leftRightSelector;
 
 
+
+    function textureScale(dir) {
+
+        console.log("textureScale, dir",dir)
+
+
+         sBrush.scale.x += dir*0.001;
+
+
+        // if(sBrush.scale.x < sBrush.maxScale){
+        //     sBrush.scale.x += 0.01
+        // } else {
+        //     sBrush.scale.x = sBrush.maxScale            
+        // }
+
+        // if(sBrush.scale.x < sBrush.minScale) {
+        //     sBrush.scale.x = sBrush.minScale;
+
+        // }
+
+
+        sBrush.scale.y = sBrush.scale.x;
+
+
+        //sBrush.scale.set(nscale)
+
+    }
+
+
+    w.textureScale = textureScale;    
+
+
+
+
     function _selected(textureId, x, y) {
 
         console.log("_selected: textureId, x, y", textureId, x, y)
@@ -588,7 +666,7 @@ function initPixi() {
         }
 
         selected = new PIXI.Graphics();
-        selected.beginFill(0xffffff, 0.4);
+        selected.beginFill(0xFFC0CB, 0.4);
         selected.drawRect(x - 35, wapp.H - 80, 80, 80);
         selected.endFill();
         selected.zIndex = 10
@@ -899,90 +977,6 @@ function initGame() {
 initGame();
 
 
-function getUSB() {
-
-
-    let button = document.getElementById('request-device');
-    button.className = "bu";
-    button.style.display = "block";
-
-    button.addEventListener('click', async () => {
-
-        console.log("request-device click")
-
-        let device;
-
-        // try {
-        //   device = await navigator.usb.requestDevice({ filters: [{
-        //       vendorId: 0xABCD,
-        //       classCode: 0xFF, // vendor-specific
-        //       protocolCode: 0x01
-        //   }]});
-        // } catch (err) {
-        //   // No device was selected.
-        // }
-
-        // if (device !== undefined) {
-        //   // Add |device| to the UI.
-        //   console.log("device: ",device)
-        // }
-
-
-        try {
-
-            device = await navigator.usb.getDevices({
-                filters: [{
-                    vendorId: 0xABCD,
-                    classCode: 0xFF, // vendor-specific
-                    protocolCode: 0x01
-                }]
-            });
-
-        } catch (err) {
-            // No device was selected.
-        }
-
-        if (device !== undefined) {
-
-
-            devices.forEach(device => {
-                // Add |device| to the UI.
-                console.log("USB DEVICES: ", device)
-            });
-
-
-        }
-
-
-
-
-    });
-
-
-
-    navigator.usb.addEventListener('connect', event => {
-        // Add |event.device| to the UI.
-        console.log('connect', event)
-    });
-
-    navigator.usb.addEventListener('disconnect', event => {
-        // Remove |event.device| from the UI.
-        console.log('disconnect', event)
-    });
-
-
-    // devices = await navigator.usb.getDevices();
-
-    // devices.forEach(device => {
-    //   // Add |device| to the UI.
-    //   console.log("USB DEVICES: ", device)
-    // });
-
-
-}
-
-
-window.getUSB = getUSB
 
 
 window.addEventListener('resize', resizeGame, false);
