@@ -1,8 +1,15 @@
-// import Controller from './thingy_support/main.js';
-// import dtw from './dtw.js';
-
 import css from './style.css';
-import * as PIXI from 'pixi.js'
+
+//import * as PIXI from 'pixi.js'
+import { Application, Container, Graphics, Loader, Sprite, Texture, Text } from 'pixi.js'
+
+
+import { BasisLoader } from '@pixi/basis';
+//import { Loader } from '@pixi/loaders';
+
+Loader.registerPlugin(BasisLoader);
+// Use this if you to use the default
+BasisLoader.loadTranscoder('./assets/js/basis_transcoder.js', './assets/js/basis_transcoder.wasm');
 
 import { DataReportMode, IRDataType, IRSensitivity } from "./wiimote-webhid/src/const.js";
 import WIIMote from './wiimote-webhid/src/wiimote.js'
@@ -21,56 +28,26 @@ const cols_grey = 0x5c5c5c
 const selectorSpeed = 0.01;
 let selectorKey = 0;
 
-console.log("wapp", wapp)
-
-/* Main Container */
-var mC = new PIXI.Container();
-
-//var tempGUI = new PIXI.Text("Please connect a controller", {fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'center'})
-//var tempLOGO = PIXI.Sprite.from("/src/assets/5gtours.png")
-
-var canvasItems = []
-window.canvasItems = canvasItems;
-
-var paintingArea = new PIXI.Graphics();
-paintingArea.beginFill(cols_blue1);
-paintingArea.drawRect(0, 0, wapp.W, wapp.H);
-paintingArea.endFill();
-paintingArea.zIndex = 1
-paintingArea.interactive = true
-
-var vBrush = PIXI.Sprite.from("./assets/brushes/brush6.png")
-vBrush.zIndex = 10000000;
-// vBrush.lineStyle(0);
-// vBrush.beginFill(0xFFFF0B, 0.5);
-// vBrush.drawCircle(470, 90,60);
-// vBrush.endFill();
+let mC
+let canvasItems = []
+let paintingArea
+let vBrush
+let sBrush
 
 
-// Selected Brush
-var sBrush = PIXI.Sprite.from("./assets/shapes/01.png")
-sBrush.zIndex = 50000;
-sBrush.scale.set(0.4)
-sBrush.anchor.set(0.5)
-sBrush.minScale = 0.1;
-sBrush.maxScale = 2;
+let scale1 = 0.24
 
+let selected;
+let selectedGraphic = 0;
 
-window.sBrush = sBrush
+let selectedTool = 0;
+let selectedToolGraphic = 0;
 
+let editToolSelection;
+let editToolSelectionData;
 
-var selected;
-var selectedGraphic = 0;
+let paintTool;
 
-var selectedTool = 0;
-var selectedToolGraphic = 0;
-
-var editToolSelection;
-var editToolSelectionData;
-
-var paintTool;
-
-//wiimote
 var device = null; //bluetooth connection
 var wiimote = null; //wiimote
 var buttonState = {
@@ -81,38 +58,16 @@ var buttonState = {
     DPAD_RIGHT: false
 }
 
-mC.interactive = true
-mC.buttonMode = true
-mC.sortableChildren = true
-
-paintingArea.on('pointertap', (pointer) => {
-
-    const { x, y } = vBrush //pointer.data.global
-
-    if (selectedTool == "paint") { //  && x > 80+50
-        let svgItem = pop(selectedGraphic, x, y)
-        canvasItems.push(svgItem)
-    }
-
-    console.log("paintingArea.on('pointertap', (pointer), selectedTool", pointer, selectedTool)
-
-});
-
-mC.addChild(paintingArea)
-
-
 var dtwTest = null;
 var app = null;
-
-// let requestButton = document.getElementById("request-hid-device");
-
-
 let ledK = 0;
 
+let textures = []
+
+
+
 function circleLed() {
-
     setInterval(function() {
-
         ledK++;
         if (ledK >= 4) {
             ledK = 0;
@@ -122,17 +77,11 @@ function circleLed() {
                 wiimote.toggleLed(ledK)
             }
         }
-
-
     }, 500)
-
-
 }
 
 
 function enableControls() {
-
-
     console.log("enableControls")
 
 
@@ -289,7 +238,7 @@ function enableControls() {
         sBrush.x = vBrush.x;
         sBrush.y = vBrush.y;
 
-        sBrush.angle = vBrush.angle;//90*(Math.PI/180)
+        sBrush.angle = vBrush.angle*5;//90*(Math.PI/180)
 
 
 
@@ -416,7 +365,7 @@ function initController() {
     //         // mC.destroy()
     //         // app.stage.destroy(true)
     //         // document.getElementsByTagName("canvas")[0].remove()
-    //         // // mC = new PIXI.Container();
+    //         // // mC = new Container();
     //         // initPixi()
     //         // app.stage.addChild(mC);
     //     };
@@ -453,7 +402,7 @@ function clearAllCanvas() {
 
 /* --------- */
 
-function gestureEvent(name) {
+/*function gestureEvent(name) {
 
     const mouvements = {
         "up": 5,
@@ -461,8 +410,8 @@ function gestureEvent(name) {
         "swing": 8
     }
 
-    const texture = PIXI.Texture.from('./assets/GAM_WALL_EXP/GAM_svg/DE-MARIA_-0' + mouvements[name] + '.svg')
-    const svg = new PIXI.Sprite(texture);
+    const texture = Texture.from('./assets/GAM_WALL_EXP/GAM_svg/DE-MARIA_-0' + mouvements[name] + '.svg')
+    const svg = new Sprite(texture);
 
     svg.anchor.set(0.5);
     //svg.scale.set(0.3,0.3)
@@ -471,7 +420,7 @@ function gestureEvent(name) {
     svg.y = Math.floor(Math.random() * (app.screen.height - 150)) + 50
 
     mC.addChild(svg);
-}
+}*/
 
 // function _connected(d){
 //     controller.rawDataListener(d.deviceID, test)
@@ -497,7 +446,7 @@ function initPixi() {
 
     let view = document.getElementById("screen")
 
-    app = new PIXI.Application({
+    app = new Application({
         /*        width: wapp.W, 
                 height: wapp.H, */
         backgroundColor: cols_blue1,
@@ -527,21 +476,7 @@ function initPixi() {
 
 
 
-    /* Loading assets, images, textures ... */
 
-    const texture = PIXI.Texture.from('./assets/shapes/01.png');
-
-    const textures = []
-    window.textures = textures;
-
-    for (let index = 1; index <= 17; index++) {
-        const strI = (index < 10) ? "0" + index : index + '';
-
-        textures.push(
-            PIXI.Texture.from('./assets/shapes/' + strI + '.png')
-            //PIXI.Texture.from('./assets/GAM_WALL_EXP/GAM_svg/DE-MARIA_-'+strI+'.svg')
-        )
-    }
 
     function pop(textureId, x, y) {
 
@@ -550,7 +485,7 @@ function initPixi() {
         if (textureId == "random") {
 
             texture = textures[Math.floor(Math.random() * textures.length)]
-            svg = new PIXI.Sprite(texture);
+            svg = new Sprite(texture);
             svg.x = Math.floor(Math.random() * (app.screen.width - 150)) + 50
             svg.y = Math.floor(Math.random() * (app.screen.height - 150)) + 50
 
@@ -559,8 +494,8 @@ function initPixi() {
 
             texture = textures[textureId]
 
-            svg = new PIXI.Sprite(texture);
-            svg.scale.set(0.45, 0.45);
+            svg = new Sprite(texture);
+            svg.scale.set(scale1, scale1);
             svg.x = x
             svg.y = y
 
@@ -665,7 +600,7 @@ function initPixi() {
             mC.removeChild(selected)
         }
 
-        selected = new PIXI.Graphics();
+        selected = new Graphics();
         selected.beginFill(0xFFC0CB, 0.4);
         selected.drawRect(x - 35, wapp.H - 80, 80, 80);
         selected.endFill();
@@ -691,7 +626,7 @@ function initPixi() {
             mC.removeChild(selectedToolGraphic)
         }
 
-        selectedToolGraphic = new PIXI.Graphics();
+        selectedToolGraphic = new Graphics();
         selectedToolGraphic.beginFill(0xffffff, 0.4);
         selectedToolGraphic.drawRect(x, y, 80, 80);
         selectedToolGraphic.endFill();
@@ -717,7 +652,7 @@ function initPixi() {
 
         console.log("loadTools")
 
-        const graphics = new PIXI.Graphics();
+        const graphics = new Graphics();
         graphics.beginFill(cols_grey);
         graphics.drawRect(0, 0, 80, wapp.H);
         graphics.endFill();
@@ -727,7 +662,7 @@ function initPixi() {
         //mC.addChild(graphics)
 
 
-        paintTool = new PIXI.Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        paintTool = new Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
         paintTool.x = 12
         paintTool.y = 25
         paintTool.interactive = true
@@ -743,7 +678,7 @@ function initPixi() {
         //mC.addChild(paintTool)
 
 
-        const editTool = new PIXI.Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        const editTool = new Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
         editTool.x = 18
         editTool.y = 25 * 4
         editTool.interactive = true
@@ -811,7 +746,7 @@ function initPixi() {
 
     function loadTextures() {
 
-        const bottomBackgroundTool = new PIXI.Graphics();
+        const bottomBackgroundTool = new Graphics();
         bottomBackgroundTool.beginFill(cols_grey);
         bottomBackgroundTool.drawRect(0, wapp.H - 80, wapp.W, 100);
         bottomBackgroundTool.endFill();
@@ -842,23 +777,12 @@ function initPixi() {
         // });
     }
 
-    //init tempGUI message
-    // tempGUI.x = (1000-tempGUI.width)/2
-    // tempGUI.y = 400
-
-    // tempLOGO.x = 410
-    // tempLOGO.y = 120
-    // tempLOGO.scale.set(0.8, 0.8)
 
     loadTools()
 
     loadTextures()
 
-    // mC.addChild(tempGUI);
-    // mC.addChild(tempLOGO)
-
     window.pop = pop
-
 
 
     changeTool("paint");
@@ -866,50 +790,31 @@ function initPixi() {
 
     app.ticker.add((delta) => {
 
-
-
-
-          if(app.playing) {
-
-              
-
+        if (app.playing) {
 
             canvasItems.forEach(item => {
-
-
-
-                 if(item.x > wapp.W) {
-                     item.x = -item.width;
-                 }
-
-                
-                if(item.x < -item.width) {
+                if (item.x > wapp.W) {
+                    item.x = -item.width;
+                }
+                if (item.x < -item.width) {
                     item.x = wapp.W;
                 }
-
-                if(item.y > wapp.H) {
+                if (item.y > wapp.H) {
                     item.y = -item.height;
                 }
-                if(item.y < -wapp.H) {
-                    item.y = wapp.H +item.height;
+                if (item.y < -wapp.H) {
+                    item.y = wapp.H + item.height;
                 }
-
-
                 item.x += item.speedX;
                 item.y += item.speedY;
-
                 item.angle += 0.1
-
-                console.log(wapp.W,item.x)
-
-
+                console.log(wapp.W, item.x)
             });
-
-
-          }
-
-
+        }
     })
+
+
+    initController();
 
 
 
@@ -921,20 +826,116 @@ function resizeGame() {
 
     console.log("resizeGame:", $(window).width())
 
-
     wapp.W = $(window).width();
     wapp.H = $(window).height();
 
-    //console.log('resizeGame',$(window).width(), $(window).height())
-    // game.w = $(window).width();
-    // game.h = $(window).height();
-    // game.ah = game.h - offsetY;
-    // app.resize(game.w, game.w);
-    // reposUI(scoreTable,"topmiddle");
-    // reposUI(playAgain,"middle");
-    // game.playing = false;
 
 }
+
+window.textures = textures;
+
+
+
+function addSprites(resources) {
+   
+   console.log("addSprites")
+
+   Object.keys(resources).forEach(key => {
+        //console.log(resources[key]);
+        textures.push(resources[key].texture)
+
+    });
+    setupStage()
+}
+
+
+
+function loadAssets() {
+
+    console.log("loadAssets");
+
+    for (let index = 1; index <= 17; index++) {
+        const strI = (index < 10) ? "0" + index : index + '';
+        Loader.shared.add('shape'+strI, './assets/shapes/300/basis/'+strI+'.basis')
+    }
+
+    Loader.shared.load((loader, resources) => {})
+    Loader.shared.onProgress.add(() => {
+        console.log("loading...")
+    }); // called once per loaded/errored file
+    Loader.shared.onError.add(() => {
+        console.log("Error loading...")
+    }); // called once per errored file
+    //Loader.shared.onLoad.add(() => {}); // called once per loaded file    
+
+    Loader.shared.onComplete.once(() => {
+        console.log("onComplete");
+        const resources = Loader.shared.resources;
+        addSprites(resources);
+    });
+
+
+}
+
+
+function setupStage() {
+
+    console.log("setupStage");
+
+    mC = new Container();
+    mC.interactive = true
+    mC.buttonMode = true
+    mC.sortableChildren = true
+
+
+
+    paintingArea = new Graphics();
+    paintingArea.beginFill(cols_blue1);
+    paintingArea.drawRect(0, 0, wapp.W, wapp.H);
+    paintingArea.endFill();
+    paintingArea.zIndex = 1
+    paintingArea.interactive = true
+
+    vBrush = Sprite.from("./assets/brushes/brush6.png");//Sprite.from(textures[5])
+    vBrush.zIndex = 10000000;
+
+    window.vBrush = vBrush;
+
+    sBrush = Sprite.from(textures[0])
+
+    sBrush.zIndex = 50000;
+    sBrush.scale.set(scale1*0.9)
+    sBrush.anchor.set(0.5)
+    sBrush.minScale = 0.1;
+    sBrush.maxScale = 2;
+
+
+    window.sBrush = sBrush;
+
+    paintingArea.on('pointertap', (pointer) => {
+
+        const { x, y } = vBrush //pointer.data.global
+
+        if (selectedTool == "paint") { //  && x > 80+50
+            let svgItem = pop(selectedGraphic, x, y)
+            canvasItems.push(svgItem)
+        }
+
+        console.log("paintingArea.on('pointertap', (pointer), selectedTool", pointer, selectedTool)
+
+    });
+
+    mC.addChild(paintingArea)    
+
+
+
+    initPixi();
+
+
+}
+
+
+
 
 
 function initGame() {
@@ -969,8 +970,11 @@ function initGame() {
     wapp.W = $(window).width();
     wapp.H = $(window).height();
 
-    initPixi()
-    initController()
+    loadAssets();
+
+
+    // initPixi()
+    // initController()
 
 }
 

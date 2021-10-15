@@ -33,19 +33,19 @@ button {
     padding: 1rem;
     margin: 0.1rem;
     border-radius: 9px;
-    border-color: rgba(255,255,255,1);
+    border-color: rgba(255, 255, 255, 1);
     display: inline-block;
     border: 4px solid;
-    transition: all 0.4s ease 0s;    
-  animation-name: blinking;
-  animation-duration: 10s;
-  animation-iteration-count: 100;
+    transition: all 0.4s ease 0s;
+    animation-name: blinking;
+    animation-duration: 10s;
+    animation-iteration-count: 100;
 }
 
 @keyframes blinking {
-  50% {
-    border-color: rgba(255,255,255,0);
-  }
+    50% {
+        border-color: rgba(255, 255, 255, 0);
+    }
 }
 
 

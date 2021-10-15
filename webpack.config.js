@@ -1,17 +1,11 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const webpack = require('webpack');
-
-const path = require("path");
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const CopyPlugin = require("copy-webpack-plugin");
+const webpack = require('webpack')
 
 module.exports = {
-  entry: "./src/app.js",
-  mode: "development",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js"
-  },
-  
+  mode: 'development',
   devServer: {
     historyApiFallback: true,
     open: true,
@@ -20,8 +14,7 @@ module.exports = {
     https: true,
     host: 'localhost',
     port: 3030
-  },   
-
+  },
   module: {
     rules: [
       {
@@ -36,21 +29,30 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },      
     ]
+  },    
+  entry: {
+    main: path.resolve(__dirname, './src/app.js'),
+  },
+   output: {
+    path: path.resolve(__dirname, './dist'),
+    filename: '[name].bundle.js',
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template:'src/index.html',
-      title: 'DRAGONS AND ROBOTS',
-      output: 'index.html'
+      title: 'clean webpack',
+      template: path.resolve(__dirname, './src/index.html'), // template file
+      filename: 'index.html', // output file
     }),
     new CopyPlugin({
       patterns: [
         { from: 'assets', to: 'assets' },
       ],
-    }),
+    }),    
+    new CleanWebpackPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.ProvidePlugin({
       $: 'webpack-zepto',
       Zepto: 'webpack-zepto'
     })     
-  ]
-};
+  ],  
+}
