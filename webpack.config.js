@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require('webpack')
+const { SourceMapDevToolPlugin } = require("webpack");
 
 module.exports = {
   mode: 'development',
@@ -27,8 +28,13 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
-      },      
-    ]
+      },
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+      },            
+        ]
   },    
   entry: {
     main: path.resolve(__dirname, './src/app.js'),
@@ -53,6 +59,10 @@ module.exports = {
     new webpack.ProvidePlugin({
       $: 'webpack-zepto',
       Zepto: 'webpack-zepto'
-    })     
+    }),
+    new SourceMapDevToolPlugin({
+      filename: "[file].map"
+    })
+
   ],  
 }

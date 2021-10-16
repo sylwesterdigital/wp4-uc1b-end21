@@ -231,7 +231,14 @@ function enableControls() {
             return
         }
 
-        vBrush.x = wapp.W - pos[0]["x"] //max 1016
+        var _sW = 1366;//app.stage.width
+        var pX = _sW - pos[0]["x"];
+
+        if(pX >= 1365) {
+            pX = 1365
+        }
+
+        vBrush.x = pX; //max 1016
         vBrush.y = pos[0]["y"] //max 760
 
 
@@ -243,7 +250,7 @@ function enableControls() {
 
 
         //document.getElementById("IRdebug").innerHTML = JSON.stringify(pos, null, true)
-        document.getElementById("IRdebug").innerHTML = vBrush.x + " " + vBrush.y;
+        document.getElementById("IRdebug").innerHTML = pos[0]["x"] + " " + pos[0]["y"] + "_pX:" + pX + " _sW:" + _sW;
     }
 
 
@@ -502,7 +509,7 @@ function initPixi() {
             svg.speedX = Math.random()*3 - Math.random()*3
             svg.speedY = Math.random()*3 - Math.random()*3
 
-            svg.angle = vBrush.angle;
+            svg.angle = vBrush.angle*5;
             svg.scale.set(sBrush.scale.x, sBrush.scale.y);
 
 
@@ -829,6 +836,8 @@ function resizeGame() {
     wapp.W = $(window).width();
     wapp.H = $(window).height();
 
+    document.getElementById("IRdebug").innerHTML = wapp.W +" x "+wapp.H;
+
 
 }
 
@@ -845,32 +854,52 @@ function addSprites(resources) {
         textures.push(resources[key].texture)
 
     });
+
     setupStage()
 }
 
 
+function parsingMiddleware() {
+
+    console.log("parsingMiddleware");
+
+}
+
 
 function loadAssets() {
 
-    console.log("loadAssets");
+    console.log("loadAssets"); 
+
+
+    const loader = Loader.shared; 
 
     for (let index = 1; index <= 17; index++) {
         const strI = (index < 10) ? "0" + index : index + '';
-        Loader.shared.add('shape'+strI, './assets/shapes/300/basis/'+strI+'.basis')
+        let strName = 'shape'+strI
+        console.log("strName:", strName)
+        loader.add(strName, './assets/shapes/300/basis/'+strI+'.basis')
     }
 
-    Loader.shared.load((loader, resources) => {})
-    Loader.shared.onProgress.add(() => {
+    loader.load((loader, resources) => {})
+
+
+    //loader.use(parsingMiddleware)
+
+    loader.onProgress.add(() => {
         console.log("loading...")
     }); // called once per loaded/errored file
-    Loader.shared.onError.add(() => {
+
+    loader.onError.add(() => {
         console.log("Error loading...")
     }); // called once per errored file
-    //Loader.shared.onLoad.add(() => {}); // called once per loaded file    
 
-    Loader.shared.onComplete.once(() => {
+    loader.onLoad.add(() => {
+        console.log("- loaded")        
+    }); // called once per loaded file    
+
+    loader.onComplete.add(() => {
         console.log("onComplete");
-        const resources = Loader.shared.resources;
+        const resources             = loader.resources;
         addSprites(resources);
     });
 
