@@ -32,6 +32,27 @@ let w = window;
 const cols_blue1 = 0x132CAD
 const cols_grey = 0x5c5c5c
 
+
+const flipSpeed = 0.01;
+let flipKey = 0;
+let flipActions = {
+    "UP": {
+        state: false
+    },
+    "DOWN": {
+        state: false
+    },
+    "LEFT": {
+        state: false
+    },
+    "RIGHT": {
+        state: false
+    }
+}
+w.flipActions = flipActions;
+
+
+
 const selectorSpeed = 0.01;
 let selectorKey = 0;
 
@@ -57,6 +78,10 @@ let paintTool;
 
 var device = null; //bluetooth connection
 var wiimote = null; //wiimote
+
+let wiimotes = [];
+window.wiimotes = wiimotes;
+
 var buttonState = {
     A: false,
     B: false,
@@ -71,8 +96,6 @@ let ledK = 0;
 
 let textures = []
 
-
-
 function circleLed() {
     setInterval(function() {
         ledK++;
@@ -81,7 +104,7 @@ function circleLed() {
         }
         for (var i = 0; i < 4; i++) {
             if (i == ledK) {
-                wiimote.toggleLed(ledK)
+                wiimotes[wiipos].toggleLed(ledK)
             }
         }
     }, 500)
@@ -89,18 +112,19 @@ function circleLed() {
 
 
 function enableControls() {
-    console.log("enableControls")
 
+    console.log("enableControls", wiimotes.length)
 
-    // //wiimote.toggleLed(2)
+    // //wiimotes[wiipos].toggleLed(2)
     // circleLed()
 
-    wiimote.initiateIR()
+    let wiipos = wiimotes.length-1;
 
-    // wiimote.BtnListener = function(buttons) {
+    wiimotes[wiipos].initiateIR()
 
+    wiimotes[wiipos].toggleLed(wiipos)
 
-
+    // wiimotes[wiipos].BtnListener = function(buttons) {
 
     //     /* buttons
 
@@ -119,7 +143,7 @@ function enableControls() {
     //     */
 
 
-    wiimote.BtnListener = (buttons) => {
+    wiimotes[wiipos].BtnListener = (buttons) => {
 
         var buttonJSON = JSON.stringify(buttons, null, 2);
 
@@ -198,6 +222,21 @@ function enableControls() {
         }
 
 
+        // flippin
+        if (buttons.DPAD_UP == true) {
+            flipScale("UP");
+        }
+        if (buttons.DPAD_DOWN == true) {
+            flipScale("DOWN");
+        }
+        if (buttons.DPAD_LEFT == true) {
+            flipScale("LEFT");
+        }
+        if (buttons.DPAD_RIGHT == true) {
+            flipScale("RIGHT");
+        }
+
+
 
 
         /*        if (buttons && buttons.DPAD_RIGHT == true) {
@@ -214,7 +253,7 @@ function enableControls() {
 
     }
 
-    wiimote.AccListener = (x, y, z) => {
+    wiimotes[wiipos].AccListener = (x, y, z) => {
 
         if (vBrush) {
             vBrush.angle = (x * -1 + 120) * -1;
@@ -232,7 +271,7 @@ function enableControls() {
 
     }
 
-    wiimote.IrListener = (pos) => {
+    wiimotes[wiipos].IrListener = (pos) => {
 
         if (pos.length < 1) {
             return
@@ -283,23 +322,27 @@ function initController() {
 
     conBut.onclick = async function() { // Note this is a function
         // controller.newDevice(pop, _connected)
+
         try {
+
             const devices = await navigator.hid.requestDevice({
                 filters: [{ vendorId: 0x057e }],
             });
 
-
-
-
             device = devices[0];
-            wiimote = new WIIMote(device)
-            window.wiimote = wiimote;
-
-            console.log("devices array:", devices)
-            console.log("device", device)
-            document.getElementById("buttons").style.display = "none";
-            loadingEl.style.display = "none";
             
+            const wiimote = new WIIMote(device)
+
+            wiimotes.push(wiimote);
+
+
+            window.wiimote = wiimotes[0];
+
+            //console.log("devices array:", devices)
+            //console.log("device", device)
+            
+            //document.getElementById("buttons").style.display = "none";
+            loadingEl.style.display = "none";
 
         } catch (error) {
             console.log("An error occurred.", error);
@@ -575,6 +618,36 @@ function initPixi() {
 
 
 
+    function freeState(obj,arg) {
+        for(let a in obj) {
+             if(obj[arg].state == "pressed" && a != arg) {
+                  obj[a].state = false;
+             }
+        }
+    }
+    w.freeState = freeState;
+
+    function flipScale(d) {
+        // console.log(d)
+        if(flipActions[d].state == false) {
+            flipActions[d].state = "pressed";
+            if(d == "UP" || d == "DOWN") {
+                sBrush.scale.y = - sBrush.scale.y;
+            }
+            if(d == "LEFT" || d == "RIGHT") {
+                sBrush.scale.x = - sBrush.scale.x; 
+            }
+            freeState(flipActions,d);
+        }
+    }
+
+    w.flipScale = flipScale;
+
+
+
+
+
+
     function textureScale(dir) {
 
         console.log("textureScale, dir", dir)
@@ -824,7 +897,7 @@ function initPixi() {
                 item.x += item.speedX;
                 item.y += item.speedY;
                 item.angle += 0.1
-                console.log(wapp.W, item.x)
+                //console.log(wapp.W, item.x)
             });
         }
     })

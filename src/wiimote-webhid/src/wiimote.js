@@ -282,7 +282,6 @@ export default class WIIMote{
     // Toggle button status in 
     toggleButton(name, value){
         if(name == "" || name == undefined) return
-
         this.buttonStatus[name] = (value != 0)
     }
 
@@ -308,6 +307,8 @@ export default class WIIMote{
         //console.log("event",event);
 
         var data = new Uint8Array(event.data.buffer);
+
+        //console.log(event.reportId)
 
         const [byte1, byte2,    // buttons
             accX, accY, accZ,   // ACC
