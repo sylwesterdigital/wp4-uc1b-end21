@@ -1,21 +1,28 @@
 import css from './style.css';
+var contentData = "./assets/Content.json";
 
 //import * as PIXI from 'pixi.js'
 import { Application, Container, Graphics, Loader, Sprite, Texture, Text } from 'pixi.js'
 
 
-import { BasisLoader } from '@pixi/basis';
+//import { BasisLoader } from '@pixi/basis';
 //import { Loader } from '@pixi/loaders';
 
-Loader.registerPlugin(BasisLoader);
+//Loader.registerPlugin(BasisLoader);
 // Use this if you to use the default
-BasisLoader.loadTranscoder('./assets/js/basis_transcoder.js', './assets/js/basis_transcoder.wasm');
+//BasisLoader.loadTranscoder('./assets/js/basis_transcoder.js', './assets/js/basis_transcoder.wasm');
 
 import { DataReportMode, IRDataType, IRSensitivity } from "./wiimote-webhid/src/const.js";
 import WIIMote from './wiimote-webhid/src/wiimote.js'
 
 // const controller = new Controller();
+let performance = {}
+performance.start = new Date().getTime();
+performance.loaded = null;
+performance.result = null;
 
+let loadingEl = null;
+let loadingElMsg = null;
 
 let wapp = {};
 wapp.W = $(window).width();
@@ -193,9 +200,9 @@ function enableControls() {
 
 
 
-/*        if (buttons && buttons.DPAD_RIGHT == true) {
-            leftRightSelector(1)
-        }*/
+        /*        if (buttons && buttons.DPAD_RIGHT == true) {
+                    leftRightSelector(1)
+                }*/
 
 
 
@@ -231,10 +238,10 @@ function enableControls() {
             return
         }
 
-        var _sW = 1366;//app.stage.width
+        var _sW = 1366; //app.stage.width
         var pX = _sW - pos[0]["x"];
 
-        if(pX >= 1365) {
+        if (pX >= 1365) {
             pX = 1365
         }
 
@@ -245,7 +252,7 @@ function enableControls() {
         sBrush.x = vBrush.x;
         sBrush.y = vBrush.y;
 
-        sBrush.angle = vBrush.angle*5;//90*(Math.PI/180)
+        sBrush.angle = vBrush.angle * 5; //90*(Math.PI/180)
 
 
 
@@ -289,8 +296,10 @@ function initController() {
             window.wiimote = wiimote;
 
             console.log("devices array:", devices)
-            console.log("device",device)
+            console.log("device", device)
             document.getElementById("buttons").style.display = "none";
+            loadingEl.style.display = "none";
+            
 
         } catch (error) {
             console.log("An error occurred.", error);
@@ -318,28 +327,28 @@ function initController() {
     buttonsW.appendChild(conBut)
 
 
-/*    window.navigator.hid.addEventListener('connect', ({device}) => {
-      console.log(`HID connected: ${device.productName}`);
-    });   
+    /*    window.navigator.hid.addEventListener('connect', ({device}) => {
+          console.log(`HID connected: ${device.productName}`);
+        });   
 
 
-    window.navigator.hid.addEventListener('disconnect', ({device}) => {
-      console.log(`HID disconnected: ${device.productName}`);
-    });     
+        window.navigator.hid.addEventListener('disconnect', ({device}) => {
+          console.log(`HID disconnected: ${device.productName}`);
+        });     
 
 
-    device.addEventListener("inputreport", event => {
-      const { data, device, reportId } = event;
+        device.addEventListener("inputreport", event => {
+          const { data, device, reportId } = event;
 
-      // Handle only the Joy-Con Right device and a specific report ID.
-      if (device.productId !== 0x2007 && reportId !== 0x3f) return;
+          // Handle only the Joy-Con Right device and a specific report ID.
+          if (device.productId !== 0x2007 && reportId !== 0x3f) return;
 
-      const value = data.getUint8(0);
-      if (value === 0) return;
+          const value = data.getUint8(0);
+          if (value === 0) return;
 
-      const someButtons = { 1: "A", 2: "X", 4: "B", 8: "Y" };
-      console.log(`User pressed button ${someButtons[value]}.`);
-    });*/
+          const someButtons = { 1: "A", 2: "X", 4: "B", 8: "Y" };
+          console.log(`User pressed button ${someButtons[value]}.`);
+        });*/
 
 
     // let virtControl = document.createElement("button");
@@ -506,10 +515,10 @@ function initPixi() {
             svg.x = x
             svg.y = y
 
-            svg.speedX = Math.random()*3 - Math.random()*3
-            svg.speedY = Math.random()*3 - Math.random()*3
+            svg.speedX = Math.random() * 3 - Math.random() * 3
+            svg.speedY = Math.random() * 3 - Math.random() * 3
 
-            svg.angle = vBrush.angle*5;
+            svg.angle = vBrush.angle * 5;
             svg.scale.set(sBrush.scale.x, sBrush.scale.y);
 
 
@@ -568,10 +577,10 @@ function initPixi() {
 
     function textureScale(dir) {
 
-        console.log("textureScale, dir",dir)
+        console.log("textureScale, dir", dir)
 
 
-         sBrush.scale.x += dir*0.001;
+        sBrush.scale.x += dir * 0.001;
 
 
         // if(sBrush.scale.x < sBrush.maxScale){
@@ -594,7 +603,7 @@ function initPixi() {
     }
 
 
-    w.textureScale = textureScale;    
+    w.textureScale = textureScale;
 
 
 
@@ -836,7 +845,7 @@ function resizeGame() {
     wapp.W = $(window).width();
     wapp.H = $(window).height();
 
-    document.getElementById("IRdebug").innerHTML = wapp.W +" x "+wapp.H;
+    document.getElementById("IRdebug").innerHTML = wapp.W + " x " + wapp.H;
 
 
 }
@@ -846,11 +855,12 @@ window.textures = textures;
 
 
 function addSprites(resources) {
-   
-   console.log("addSprites")
 
-   Object.keys(resources).forEach(key => {
+    console.log("addSprites")
+
+    Object.keys(resources).forEach(key => {
         //console.log(resources[key]);
+        console.log('addSprites:', key)
         textures.push(resources[key].texture)
 
     });
@@ -868,6 +878,54 @@ function parsingMiddleware() {
 
 function loadAssets() {
 
+    console.log("loadAssets", wapp.data.shapes[0].n);
+
+
+    const loader = Loader.shared;
+
+    for (let i = 0; i <= wapp.data.shapes.length - 1; i++) {
+
+        let path = wapp.data.shapes[i].p;
+        let name = wapp.data.shapes[i].n;
+        //console.log(i, name, path)
+        loader.add(name, path)
+    }
+
+    loader.load((loader, resources) => {})
+
+
+    //loader.use(parsingMiddleware)
+
+    loader.onProgress.add((res) => {
+        console.log("loading...", res.progress)
+        loadingElMsg.innerHTML = ""+Math.round(res.progress)+"%";
+    }); // called once per loaded/errored file
+
+    loader.onError.add((err) => {
+        console.log("Error loading...")
+        loadingElMsg.innerHTML = "Error"+err+"";
+    }); // called once per errored file
+
+    loader.onLoad.add(() => {
+        console.log("- loaded")
+    }); // called once per loaded file    
+
+    loader.onComplete.add(() => {
+        console.log("onComplete");
+        performance.loaded = new Date().getTime();
+        performance.result = (performance.loaded - performance.start) / 1000 + " sec"
+        console.log("onComplete: in", performance.result);
+        loadingElMsg.innerHTML = "Loader complete in "+performance.result;
+        const resources = loader.resources;
+        addSprites(resources);
+    });
+
+
+}
+
+
+/*function loadAssets() {
+
     console.log("loadAssets"); 
 
 
@@ -877,7 +935,9 @@ function loadAssets() {
         const strI = (index < 10) ? "0" + index : index + '';
         let strName = 'shape'+strI
         console.log("strName:", strName)
-        loader.add(strName, './assets/shapes/300/basis/'+strI+'.basis')
+
+        //loader.add(strName, './assets/shapes/basis/'+strI+'.basis')
+        loader.add(strName, './assets/shapes/png-tiny/'+strI+'.png')
     }
 
     loader.load((loader, resources) => {})
@@ -904,7 +964,7 @@ function loadAssets() {
     });
 
 
-}
+}*/
 
 
 function setupStage() {
@@ -925,7 +985,7 @@ function setupStage() {
     paintingArea.zIndex = 1
     paintingArea.interactive = true
 
-    vBrush = Sprite.from("./assets/brushes/brush6.png");//Sprite.from(textures[5])
+    vBrush = Sprite.from("./assets/brushes/brush6.png"); //Sprite.from(textures[5])
     vBrush.zIndex = 10000000;
 
     window.vBrush = vBrush;
@@ -933,7 +993,7 @@ function setupStage() {
     sBrush = Sprite.from(textures[0])
 
     sBrush.zIndex = 50000;
-    sBrush.scale.set(scale1*0.9)
+    sBrush.scale.set(scale1 * 0.9)
     sBrush.anchor.set(0.5)
     sBrush.minScale = 0.1;
     sBrush.maxScale = 2;
@@ -954,7 +1014,7 @@ function setupStage() {
 
     });
 
-    mC.addChild(paintingArea)    
+    mC.addChild(paintingArea)
 
 
 
@@ -967,47 +1027,43 @@ function setupStage() {
 
 
 
-function initGame() {
+/*
 
-    console.log("initGame")
+    Init and Config
+    ----------------------
 
-
-    /*  for (var a in appData.items) {
-        let name = appData.items[a].name;
-        let path = appData.items[a].path;
-        console.log('loader.add(',name, path,')');
-        loader.add(name, path)
-      }
-      loader.load((loader, resources) => {
-        console.log('resources',resources);
-      });
-      loader.onProgress.add((e) => {
-        console.log('progress - loader', e.progress)
-      });
-      loader.onError.add(() => {
-        console.log('onError - loader')
-      });
-      loader.onLoad.add((e) => {
-        console.log('onLoad - loader')
-      });
-      loader.onComplete.add(() => {
-        console.log('- assets loaded');
-        setTimeout(setupGame,100);    
-      });*/
+                        */
 
 
-    wapp.W = $(window).width();
-    wapp.H = $(window).height();
-
-    loadAssets();
-
-
-    // initPixi()
-    // initController()
-
+function loadConfig(callback) {
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', contentData, true);
+    xobj.onreadystatechange = function() {
+        //console.log('xobj.readyState',xobj.readyState)
+        if (xobj.readyState == 4 && xobj.status == "200") {
+            callback(xobj.responseText);
+        }
+    };
+    xobj.send(null);
 }
 
-initGame();
+
+//read setup
+function initConfig() {
+
+    loadingEl = document.getElementById('loading')
+    loadingElMsg = document.getElementById('loading-msg')
+
+    loadConfig(function(response) {
+        // Parse JSON string into object
+        wapp.data = JSON.parse(response);
+        loadAssets();
+    });
+}
+
+initConfig();
+
 
 
 

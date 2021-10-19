@@ -1,7 +1,7 @@
 {
   "name": "interactivewall",
   "version": "1.0.0",
-  "description": "clean web",
+  "description": "interactive wall",
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --mode development --open --host 0.0.0.0",
