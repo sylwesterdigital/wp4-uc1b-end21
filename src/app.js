@@ -59,8 +59,13 @@ let selectorKey = 0;
 let mC
 let canvasItems = []
 let paintingArea
-let vBrush
-let sBrush
+
+let vBrush1
+let vBrush2
+let vBrushes = []
+
+let sBrush1, sBrush2;
+let sBrushes = []
 
 
 let scale1 = 0.24
@@ -104,7 +109,7 @@ function circleLed() {
         }
         for (var i = 0; i < 4; i++) {
             if (i == ledK) {
-                wiimotes[wiipos].toggleLed(ledK)
+                wiimotes[wiiN].toggleLed(ledK)
             }
         }
     }, 500)
@@ -115,16 +120,16 @@ function enableControls() {
 
     console.log("enableControls", wiimotes.length)
 
-    // //wiimotes[wiipos].toggleLed(2)
+    // //wiimotes[wiiN].toggleLed(2)
     // circleLed()
 
-    let wiipos = wiimotes.length-1;
+    let wiiN = wiimotes.length-1;
 
-    wiimotes[wiipos].initiateIR()
+    wiimotes[wiiN].initiateIR()
 
-    wiimotes[wiipos].toggleLed(wiipos)
+    wiimotes[wiiN].toggleLed(wiiN)
 
-    // wiimotes[wiipos].BtnListener = function(buttons) {
+    // wiimotes[wiiN].BtnListener = function(buttons) {
 
     //     /* buttons
 
@@ -143,14 +148,29 @@ function enableControls() {
     //     */
 
 
-    wiimotes[wiipos].BtnListener = (buttons) => {
+    wiimotes[wiiN].id = wiiN;
+
+    wiimotes[wiiN].BtnListener = (buttons) => {
+
+
+        //console.log()
+
+        //console.log("wiiN:",wiiN)
 
         var buttonJSON = JSON.stringify(buttons, null, 2);
 
 
-        const { x, y } = vBrush
+        //console.log(this.parent)
+
+
+        const { x, y } = vBrushes[0]
 
         if (buttons.MINUS == true) {
+
+
+            //console.log("MINUS", id)
+
+
             if (buttonState.MINUS == false) {
                 buttonState.MINUS = true
             }
@@ -171,6 +191,9 @@ function enableControls() {
         //
         if (buttons.B == true) {
 
+
+            console.log("wiiN:",buttons)
+
             var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
             if (buttonState.B == false) {
@@ -181,7 +204,7 @@ function enableControls() {
                 buttonState.B = true
             }
 
-            a.emit("mousemove")
+            //a.emit("mousemove")
         }
 
         if (buttons.B == false && buttonState.B == true) {
@@ -253,11 +276,11 @@ function enableControls() {
 
     }
 
-    wiimotes[wiipos].AccListener = (x, y, z) => {
+    wiimotes[wiiN].AccListener = (x, y, z) => {
 
-        if (vBrush) {
-            vBrush.angle = (x * -1 + 120) * -1;
-            let angles = String(vBrush.angle).substr(0, 4)
+        if (vBrushes[wiiN]) {
+            vBrushes[wiiN].angle = (x * -1 + 120) * -1;
+            let angles = String(vBrushes[wiiN].angle).substr(0, 4)
 
             document.getElementById('accA').innerHTML = angles
         }
@@ -271,7 +294,7 @@ function enableControls() {
 
     }
 
-    wiimotes[wiipos].IrListener = (pos) => {
+    wiimotes[wiiN].IrListener = (pos) => {
 
         if (pos.length < 1) {
             return
@@ -284,14 +307,14 @@ function enableControls() {
             pX = 1365
         }
 
-        vBrush.x = pX; //max 1016
-        vBrush.y = pos[0]["y"] //max 760
+        vBrushes[wiiN].x = pX; //max 1016
+        vBrushes[wiiN].y = pos[0]["y"] //max 760
 
 
-        sBrush.x = vBrush.x;
-        sBrush.y = vBrush.y;
+        sBrushes[0].x = vBrushes[wiiN].x;
+        sBrushes[0].y = vBrushes[wiiN].y;
 
-        sBrush.angle = vBrush.angle * 5; //90*(Math.PI/180)
+        sBrushes[0].angle = vBrushes[wiiN].angle * 5; //90*(Math.PI/180)
 
 
 
@@ -316,7 +339,8 @@ function initController() {
 
     var conBut = document.createElement("button");
 
-    conBut.innerText = "+ CONNECT WiiMOTE";
+    conBut.innerText = "+ "+(wiimotes.length+1);
+
     conBut.className = "bu";
     conBut.id = "request-hid-device"
 
@@ -334,6 +358,11 @@ function initController() {
             const wiimote = new WIIMote(device)
 
             wiimotes.push(wiimote);
+            conBut.innerText = "+ "+(wiimotes.length+1);
+
+            if(wiimotes.length >= 2) {
+             document.getElementById("request-hid-device").style.display = "none";  
+            }
 
 
             window.wiimote = wiimotes[0];
@@ -503,6 +532,8 @@ function clearAllCanvas() {
 
 function initPixi() {
 
+    console.log("initPixi");
+
     let view = document.getElementById("screen")
 
     app = new Application({
@@ -528,13 +559,11 @@ function initPixi() {
 
     app.stage.addChild(mC);
 
-    mC.addChild(vBrush)
+    mC.addChild(vBrush1)
+    mC.addChild(vBrush2)
 
-    mC.addChild(sBrush)
-
-
-
-
+    mC.addChild(sBrush1)
+    mC.addChild(sBrush2)
 
 
     function pop(textureId, x, y) {
@@ -561,8 +590,8 @@ function initPixi() {
             svg.speedX = Math.random() * 3 - Math.random() * 3
             svg.speedY = Math.random() * 3 - Math.random() * 3
 
-            svg.angle = vBrush.angle * 5;
-            svg.scale.set(sBrush.scale.x, sBrush.scale.y);
+            svg.angle = vBrushes[0].angle * 5;
+            svg.scale.set(sBrushes[0].scale.x, sBrushes[0].scale.y);
 
 
 
@@ -607,7 +636,7 @@ function initPixi() {
 
         selectedGraphic = v;
 
-        sBrush.texture = textures[v]
+        sBrushes[0].texture = textures[v]
 
 
         console.log("leftRightSelector(dir), selectedGraphic", dir, selectedGraphic)
@@ -632,10 +661,10 @@ function initPixi() {
         if(flipActions[d].state == false) {
             flipActions[d].state = "pressed";
             if(d == "UP" || d == "DOWN") {
-                sBrush.scale.y = - sBrush.scale.y;
+                sBrushes[0].scale.y = - sBrushes[0].scale.y;
             }
             if(d == "LEFT" || d == "RIGHT") {
-                sBrush.scale.x = - sBrush.scale.x; 
+                sBrushes[0].scale.x = - sBrushes[0].scale.x; 
             }
             freeState(flipActions,d);
         }
@@ -653,25 +682,25 @@ function initPixi() {
         console.log("textureScale, dir", dir)
 
 
-        sBrush.scale.x += dir * 0.001;
+        sBrushes[0].scale.x += dir * 0.001;
 
 
-        // if(sBrush.scale.x < sBrush.maxScale){
-        //     sBrush.scale.x += 0.01
+        // if(sBrushes[0].scale.x < sBrushes[0].maxScale){
+        //     sBrushes[0].scale.x += 0.01
         // } else {
-        //     sBrush.scale.x = sBrush.maxScale            
+        //     sBrushes[0].scale.x = sBrushes[0].maxScale            
         // }
 
-        // if(sBrush.scale.x < sBrush.minScale) {
-        //     sBrush.scale.x = sBrush.minScale;
+        // if(sBrushes[0].scale.x < sBrushes[0].minScale) {
+        //     sBrushes[0].scale.x = sBrushes[0].minScale;
 
         // }
 
 
-        sBrush.scale.y = sBrush.scale.x;
+        sBrushes[0].scale.y = sBrushes[0].scale.x;
 
 
-        //sBrush.scale.set(nscale)
+        //sBrushes[0].scale.set(nscale)
 
     }
 
@@ -773,9 +802,13 @@ function initPixi() {
         editTool.interactive = true
         editTool.zIndex = 11
 
+
         editTool.on("pointertap", () => {
 
             _toolSelect("edit", 0, 75)
+
+            console.log("editTool.on pointertap");
+
 
             canvasItems.forEach(item => {
 
@@ -796,7 +829,7 @@ function initPixi() {
                     item
                         .on('mousedown', (event) => {
                             if (editToolSelection == item) {
-                                editToolSelectionData = vBrush
+                                editToolSelectionData = vBrushes[0]
                             }
                         })
 
@@ -808,7 +841,9 @@ function initPixi() {
                         .on('mouseupoutside', onDragEnd)
                         .on('touchend', onDragEnd)
                         .on('touchendoutside', onDragEnd)
+
                         .on('mousemove', onDragMove)
+
                         .on('touchmove', onDragMove);
 
 
@@ -1049,8 +1084,6 @@ function setupStage() {
     mC.buttonMode = true
     mC.sortableChildren = true
 
-
-
     paintingArea = new Graphics();
     paintingArea.beginFill(cols_blue1);
     paintingArea.drawRect(0, 0, wapp.W, wapp.H);
@@ -1058,25 +1091,46 @@ function setupStage() {
     paintingArea.zIndex = 1
     paintingArea.interactive = true
 
-    vBrush = Sprite.from("./assets/brushes/brush6.png"); //Sprite.from(textures[5])
-    vBrush.zIndex = 10000000;
+    vBrush1 = Sprite.from("./assets/brushes/vBrush-1.png"); //Sprite.from(textures[5])
+    vBrush1.zIndex = 10000000;
+    vBrush1.name = "vBrush1"
 
-    window.vBrush = vBrush;
+    vBrush2 = Sprite.from("./assets/brushes/vBrush-2.png"); //Sprite.from(textures[5])
+    vBrush2.zIndex = 10000001;
+    vBrush2.name = "vBrush2"
 
-    sBrush = Sprite.from(textures[0])
-
-    sBrush.zIndex = 50000;
-    sBrush.scale.set(scale1 * 0.9)
-    sBrush.anchor.set(0.5)
-    sBrush.minScale = 0.1;
-    sBrush.maxScale = 2;
+    vBrushes.push(vBrush1,vBrush2)
 
 
-    window.sBrush = sBrush;
+    window.vBrush1 = vBrush1;
+    window.vBrush2 = vBrush2;
+    window.vBrushes = vBrushes;
+
+    sBrush1 = Sprite.from(textures[0])
+
+    sBrush1.zIndex = 50000;
+    sBrush1.scale.set(scale1 * 0.9)
+    sBrush1.anchor.set(0.5)
+    sBrush1.minScale = 0.1;
+    sBrush1.maxScale = 2;
+
+    sBrush2 = Sprite.from(textures[0])
+
+    sBrush2.zIndex = 50001;
+    sBrush2.scale.set(scale1 * 0.9)
+    sBrush2.anchor.set(0.5)
+    sBrush2.minScale = 0.1;
+    sBrush2.maxScale = 2;
+
+    sBrushes.push(sBrush1,sBrush2)
+
+
+
+    window.sBrushes = sBrushes;
 
     paintingArea.on('pointertap', (pointer) => {
 
-        const { x, y } = vBrush //pointer.data.global
+        const { x, y } = vBrushes[0] //pointer.data.global
 
         if (selectedTool == "paint") { //  && x > 80+50
             let svgItem = pop(selectedGraphic, x, y)
