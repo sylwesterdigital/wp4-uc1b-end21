@@ -116,6 +116,8 @@ function circleLed() {
 }
 
 
+let currentID
+
 function enableControls() {
 
     console.log("enableControls", wiimotes.length)
@@ -192,14 +194,17 @@ function enableControls() {
         if (buttons.B == true) {
 
 
-            console.log("wiiN:",buttons)
 
             var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
             if (buttonState.B == false) {
 
-                a.emit("pointertap")
-                a.emit("mousedown")
+
+                //console.log("B, wiiN:",wiiN)
+
+                currentID = wiiN
+                a.emit("pointertap", function(e) { console.log(wiiN)})
+                //a.emit("mousedown")
 
                 buttonState.B = true
             }
@@ -211,7 +216,7 @@ function enableControls() {
             var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
             buttonState.B = false
-            a.emit("mouseup")
+            //a.emit("mouseup")
 
         }
 
@@ -311,10 +316,10 @@ function enableControls() {
         vBrushes[wiiN].y = pos[0]["y"] //max 760
 
 
-        sBrushes[0].x = vBrushes[wiiN].x;
-        sBrushes[0].y = vBrushes[wiiN].y;
+        sBrushes[wiiN].x = vBrushes[wiiN].x;
+        sBrushes[wiiN].y = vBrushes[wiiN].y;
 
-        sBrushes[0].angle = vBrushes[wiiN].angle * 5; //90*(Math.PI/180)
+        sBrushes[wiiN].angle = vBrushes[wiiN].angle * 5; //90*(Math.PI/180)
 
 
 
@@ -770,86 +775,86 @@ function initPixi() {
 
         console.log("loadTools")
 
-        const graphics = new Graphics();
-        graphics.beginFill(cols_grey);
-        graphics.drawRect(0, 0, 80, wapp.H);
-        graphics.endFill();
+        // const graphics = new Graphics();
+        // graphics.beginFill(cols_grey);
+        // graphics.drawRect(0, 0, 80, wapp.H);
+        // graphics.endFill();
 
-        graphics.zIndex = 10
+        // graphics.zIndex = 10
 
-        //mC.addChild(graphics)
-
-
-        paintTool = new Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
-        paintTool.x = 12
-        paintTool.y = 25
-        paintTool.interactive = true
-        paintTool.zIndex = 11
+        // //mC.addChild(graphics)
 
 
-        paintTool.on("pointertap", () => {
+        // paintTool = new Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        // paintTool.x = 12
+        // paintTool.y = 25
+        // paintTool.interactive = true
+        // paintTool.zIndex = 11
 
-            _toolSelect("paint", 0, 0)
-            resetEditTool()
-        })
+
+        // paintTool.on("pointertap", () => {
+
+        //     _toolSelect("paint", 0, 0)
+        //     resetEditTool()
+        // })
 
         //mC.addChild(paintTool)
 
 
-        const editTool = new Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
-        editTool.x = 18
-        editTool.y = 25 * 4
-        editTool.interactive = true
-        editTool.zIndex = 11
+        // const editTool = new Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        // editTool.x = 18
+        // editTool.y = 25 * 4
+        // editTool.interactive = true
+        // editTool.zIndex = 11
 
 
-        editTool.on("pointertap", () => {
+        // editTool.on("pointertap", () => {
 
-            _toolSelect("edit", 0, 75)
+        //     _toolSelect("edit", 0, 75)
 
-            console.log("editTool.on pointertap");
-
-
-            canvasItems.forEach(item => {
-
-                item.interactive = true
-                item.alpha = 0.2
-
-                item.on("pointertap", () => {
-
-                    canvasItems.map(x => x.alpha = 0.2)
-
-                    // if(editToolSelection != null){
-                    //     editToolSelection.removeAllListeners();
-                    // }
-
-                    editToolSelection = item;
-                    item.alpha = 1
-
-                    item
-                        .on('mousedown', (event) => {
-                            if (editToolSelection == item) {
-                                editToolSelectionData = vBrushes[0]
-                            }
-                        })
-
-                        .on('touchstart', (event) => {
-
-                        })
-
-                        .on('mouseup', onDragEnd)
-                        .on('mouseupoutside', onDragEnd)
-                        .on('touchend', onDragEnd)
-                        .on('touchendoutside', onDragEnd)
-
-                        .on('mousemove', onDragMove)
-
-                        .on('touchmove', onDragMove);
+        //     console.log("editTool.on pointertap");
 
 
-                })
-            });
-        })
+        //     canvasItems.forEach(item => {
+
+        //         item.interactive = true
+        //         item.alpha = 0.2
+
+        //         item.on("pointertap", () => {
+
+        //             canvasItems.map(x => x.alpha = 0.2)
+
+        //             // if(editToolSelection != null){
+        //             //     editToolSelection.removeAllListeners();
+        //             // }
+
+        //             editToolSelection = item;
+        //             item.alpha = 1
+
+        //             item
+        //                 .on('mousedown', (event) => {
+        //                     if (editToolSelection == item) {
+        //                         editToolSelectionData = vBrushes[0]
+        //                     }
+        //                 })
+
+        //                 .on('touchstart', (event) => {
+
+        //                 })
+
+        //                 .on('mouseup', onDragEnd)
+        //                 .on('mouseupoutside', onDragEnd)
+        //                 .on('touchend', onDragEnd)
+        //                 .on('touchendoutside', onDragEnd)
+
+        //                 .on('mousemove', onDragMove)
+
+        //                 .on('touchmove', onDragMove);
+
+
+        //         })
+        //     });
+        // })
 
         //mC.addChild(editTool)
 
@@ -1130,7 +1135,9 @@ function setupStage() {
 
     paintingArea.on('pointertap', (pointer) => {
 
-        const { x, y } = vBrushes[0] //pointer.data.global
+        const { x, y } = vBrushes[currentID] //pointer.data.global
+
+
 
         if (selectedTool == "paint") { //  && x > 80+50
             let svgItem = pop(selectedGraphic, x, y)
