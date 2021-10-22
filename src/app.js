@@ -60,11 +60,10 @@ let mC
 let canvasItems = []
 let paintingArea
 
-let vBrush1
-let vBrush2
+let vBrush1, vBrush2, vBrush3, vBrush4;
 let vBrushes = []
 
-let sBrush1, sBrush2;
+let sBrush1, sBrush2, sBrush3, sBrush4;
 let sBrushes = []
 
 
@@ -365,7 +364,7 @@ function initController() {
             wiimotes.push(wiimote);
             conBut.innerText = "+ "+(wiimotes.length+1);
 
-            if(wiimotes.length >= 2) {
+            if(wiimotes.length >= 4) {
              document.getElementById("request-hid-device").style.display = "none";  
             }
 
@@ -566,9 +565,13 @@ function initPixi() {
 
     mC.addChild(vBrush1)
     mC.addChild(vBrush2)
+    mC.addChild(vBrush3)
+    mC.addChild(vBrush4)
 
     mC.addChild(sBrush1)
     mC.addChild(sBrush2)
+    mC.addChild(sBrush3)
+    mC.addChild(sBrush4)
 
 
     function pop(textureId, x, y) {
@@ -1080,6 +1083,16 @@ function loadAssets() {
 }*/
 
 
+/*function addVBrush(n) {
+    const vBrush1 = Sprite.from("./assets/brushes/vBrush-"+n+".png"); //Sprite.from(textures[5])
+    vBrush1.zIndex = 1000000+n;
+    vBrush1.name = "vBrush"+n
+
+    vBrushes.push()
+}
+*/
+
+
 function setupStage() {
 
     console.log("setupStage");
@@ -1097,14 +1110,22 @@ function setupStage() {
     paintingArea.interactive = true
 
     vBrush1 = Sprite.from("./assets/brushes/vBrush-1.png"); //Sprite.from(textures[5])
-    vBrush1.zIndex = 10000000;
+    vBrush1.zIndex = 10000001;
     vBrush1.name = "vBrush1"
 
     vBrush2 = Sprite.from("./assets/brushes/vBrush-2.png"); //Sprite.from(textures[5])
-    vBrush2.zIndex = 10000001;
+    vBrush2.zIndex = 10000002;
     vBrush2.name = "vBrush2"
 
-    vBrushes.push(vBrush1,vBrush2)
+    vBrush3 = Sprite.from("./assets/brushes/vBrush-3.png"); //Sprite.from(textures[5])
+    vBrush3.zIndex = 10000003;
+    vBrush3.name = "vBrush3"
+
+    vBrush4 = Sprite.from("./assets/brushes/vBrush-4.png"); //Sprite.from(textures[5])
+    vBrush4.zIndex = 10000004;
+    vBrush4.name = "vBrush4"
+
+    vBrushes.push(vBrush1,vBrush2,vBrush3,vBrush4)
 
 
     window.vBrush1 = vBrush1;
@@ -1127,7 +1148,27 @@ function setupStage() {
     sBrush2.minScale = 0.1;
     sBrush2.maxScale = 2;
 
-    sBrushes.push(sBrush1,sBrush2)
+    sBrush3 = Sprite.from(textures[0])
+
+    sBrush3.zIndex = 50002;
+    sBrush3.scale.set(scale1 * 0.9)
+    sBrush3.anchor.set(0.5)
+    sBrush3.minScale = 0.1;
+    sBrush3.maxScale = 2;
+
+
+    sBrush4 = Sprite.from(textures[0])
+
+    sBrush4.zIndex = 50003;
+    sBrush4.scale.set(scale1 * 0.9)
+    sBrush4.anchor.set(0.5)
+    sBrush4.minScale = 0.1;
+    sBrush4.maxScale = 2;
+
+
+
+
+    sBrushes.push(sBrush1,sBrush2, sBrush3, sBrush4)
 
 
 
