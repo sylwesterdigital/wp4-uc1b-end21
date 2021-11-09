@@ -4,7 +4,6 @@ var contentData = "./assets/Content.json";
 //import * as PIXI from 'pixi.js'
 import { Application, Container, Graphics, Loader, Sprite, Texture, Text } from 'pixi.js'
 
-
 //import { BasisLoader } from '@pixi/basis';
 //import { Loader } from '@pixi/loaders';
 
@@ -12,7 +11,7 @@ import { Application, Container, Graphics, Loader, Sprite, Texture, Text } from 
 // Use this if you to use the default
 //BasisLoader.loadTranscoder('./assets/js/basis_transcoder.js', './assets/js/basis_transcoder.wasm');
 
-import { DataReportMode, IRDataType, IRSensitivity } from "./wiimote-webhid/src/const.js";
+//import { DataReportMode, IRDataType, IRSensitivity } from "./wiimote-webhid/src/const.js";
 import WIIMote from './wiimote-webhid/src/wiimote.js'
 
 // const controller = new Controller();
@@ -29,9 +28,9 @@ wapp.W = $(window).width();
 wapp.H = $(window).height();
 let w = window;
 
-const cols_blue1 = 0x132CAD
-const cols_grey = 0x5c5c5c
-
+const cols_blue1 = 0x132CAD;
+const cols_grey = 0x5c5c5c;
+const cols_white = 0xffffff;
 
 const flipSpeed = 0.01;
 let flipKey = 0;
@@ -60,11 +59,10 @@ let mC
 let canvasItems = []
 let paintingArea
 
-let vBrush1
-let vBrush2
+let vBrush1, vBrush2, vBrush3, vBrush4;
 let vBrushes = []
 
-let sBrush1, sBrush2;
+let sBrush1, sBrush2, sBrush3, sBrush4;
 let sBrushes = []
 
 
@@ -116,6 +114,8 @@ function circleLed() {
 }
 
 
+let currentID
+
 function enableControls() {
 
     console.log("enableControls", wiimotes.length)
@@ -150,7 +150,7 @@ function enableControls() {
 
     wiimotes[wiiN].id = wiiN;
 
-    wiimotes[wiiN].BtnListener = (buttons) => {
+    wiimotes[wiiN].BtnListener = (buttons,myID) => {
 
 
         //console.log()
@@ -160,31 +160,33 @@ function enableControls() {
         var buttonJSON = JSON.stringify(buttons, null, 2);
 
 
+
+
         //console.log(this.parent)
 
 
-        const { x, y } = vBrushes[0]
+        // const { x, y } = vBrushes[0]
 
-        if (buttons.MINUS == true) {
-
-
-            //console.log("MINUS", id)
+        // if (buttons.MINUS == true) {
 
 
-            if (buttonState.MINUS == false) {
-                buttonState.MINUS = true
-            }
-        }
+        //     //console.log("MINUS", id)
 
-        if (buttons.MINUS == false && buttonState.MINUS == true) {
-            var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
-            if (a != undefined) {
-                a.alpha = 0.5
-                // a.destroy();
-            }
-            buttonState.MINUS = false
-        }
+        //     if (buttonState.MINUS == false) {
+        //         buttonState.MINUS = true
+        //     }
+        // }
+
+        // if (buttons.MINUS == false && buttonState.MINUS == true) {
+        //     var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
+
+        //     if (a != undefined) {
+        //         a.alpha = 0.5
+        //         // a.destroy();
+        //     }
+        //     buttonState.MINUS = false
+        // }
 
 
         // B is in the belly of the controller
@@ -192,26 +194,36 @@ function enableControls() {
         if (buttons.B == true) {
 
 
-            console.log("wiiN:",buttons)
+            //var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y, id: myID })
 
-            var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
             if (buttonState.B == false) {
 
-                a.emit("pointertap")
-                a.emit("mousedown")
+
+                console.log("B:", myID)
+
+                currentID = myID
+
+                //a.emit("pointertap");
+
+                dropPaint(myID)
+
+                //a.emit("mousedown")
 
                 buttonState.B = true
+
+
             }
 
             //a.emit("mousemove")
         }
 
         if (buttons.B == false && buttonState.B == true) {
-            var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
+
+            //var a = app.renderer.plugins.interaction.hitTest({ x: x, y: y })
 
             buttonState.B = false
-            a.emit("mouseup")
+            //a.emit("mouseup")
 
         }
 
@@ -221,7 +233,7 @@ function enableControls() {
         }
 
         if (buttons.A == true) {
-            leftRightSelector(1)
+            leftRightSelector(1,myID)
         }
 
 
@@ -237,26 +249,26 @@ function enableControls() {
 
 
         if (buttons.MINUS == true) {
-            textureScale(-1);
+            textureScale(-1,myID);
         }
 
         if (buttons.PLUS == true) {
-            textureScale(1);
+            textureScale(1,myID);
         }
 
 
         // flippin
         if (buttons.DPAD_UP == true) {
-            flipScale("UP");
+            flipScale("UP",myID);
         }
         if (buttons.DPAD_DOWN == true) {
-            flipScale("DOWN");
+            flipScale("DOWN",myID);
         }
         if (buttons.DPAD_LEFT == true) {
-            flipScale("LEFT");
+            flipScale("LEFT",myID);
         }
         if (buttons.DPAD_RIGHT == true) {
-            flipScale("RIGHT");
+            flipScale("RIGHT",myID);
         }
 
 
@@ -311,10 +323,10 @@ function enableControls() {
         vBrushes[wiiN].y = pos[0]["y"] //max 760
 
 
-        sBrushes[0].x = vBrushes[wiiN].x;
-        sBrushes[0].y = vBrushes[wiiN].y;
+        sBrushes[wiiN].x = vBrushes[wiiN].x;
+        sBrushes[wiiN].y = vBrushes[wiiN].y;
 
-        sBrushes[0].angle = vBrushes[wiiN].angle * 5; //90*(Math.PI/180)
+        sBrushes[wiiN].angle = vBrushes[wiiN].angle * 5; //90*(Math.PI/180)
 
 
 
@@ -360,12 +372,11 @@ function initController() {
             wiimotes.push(wiimote);
             conBut.innerText = "+ "+(wiimotes.length+1);
 
-            if(wiimotes.length >= 2) {
+            if(wiimotes.length >= 4) {
              document.getElementById("request-hid-device").style.display = "none";  
             }
 
-
-            window.wiimote = wiimotes[0];
+            //window.wiimote = wiimotes[0];
 
             //console.log("devices array:", devices)
             //console.log("device", device)
@@ -561,12 +572,38 @@ function initPixi() {
 
     mC.addChild(vBrush1)
     mC.addChild(vBrush2)
+    mC.addChild(vBrush3)
+    mC.addChild(vBrush4)
 
     mC.addChild(sBrush1)
     mC.addChild(sBrush2)
+    mC.addChild(sBrush3)
+    mC.addChild(sBrush4)
 
 
-    function pop(textureId, x, y) {
+    function dropPaint(id) {
+        // body...
+        console.log("dropPaint",id)
+
+        let x = sBrushes[id].x;
+        let y = sBrushes[id].y;
+
+        //let tid = sBrushes[id].id;
+
+        let textureId = sBrushes[id].tid;
+
+        pop(textureId, x, y, id) 
+
+
+
+
+    }
+
+    w.dropPaint = dropPaint;
+
+
+
+    function pop(textureId, x, y, id) {
 
         var texture, svg;
 
@@ -590,8 +627,9 @@ function initPixi() {
             svg.speedX = Math.random() * 3 - Math.random() * 3
             svg.speedY = Math.random() * 3 - Math.random() * 3
 
-            svg.angle = vBrushes[0].angle * 5;
-            svg.scale.set(sBrushes[0].scale.x, sBrushes[0].scale.y);
+            svg.angle = vBrushes[id].angle * 5;
+
+            svg.scale.set(sBrushes[id].scale.x, sBrushes[id].scale.y);
 
 
 
@@ -604,13 +642,15 @@ function initPixi() {
 
         mC.addChild(svg);
 
-        console.log("pop(textureId, x, y)", textureId, x, y, "textures.length", textures.length)
+        //console.log("pop(textureId, x, y)", textureId, x, y, "textures.length", textures.length)
+
+        //console.log("pop");
 
         return svg
     }
 
 
-    function leftRightSelector(dir) {
+    function leftRightSelector(dir,id) {
 
         // leftRightSelector
 
@@ -636,10 +676,12 @@ function initPixi() {
 
         selectedGraphic = v;
 
-        sBrushes[0].texture = textures[v]
+        sBrushes[id].texture = textures[v]
+        sBrushes[id].tid = v; 
 
 
-        console.log("leftRightSelector(dir), selectedGraphic", dir, selectedGraphic)
+        //console.log("leftRightSelector(dir), selectedGraphic", dir, selectedGraphic)
+        console.log(id)
 
     }
 
@@ -656,15 +698,15 @@ function initPixi() {
     }
     w.freeState = freeState;
 
-    function flipScale(d) {
+    function flipScale(d,id) {
         // console.log(d)
         if(flipActions[d].state == false) {
             flipActions[d].state = "pressed";
             if(d == "UP" || d == "DOWN") {
-                sBrushes[0].scale.y = - sBrushes[0].scale.y;
+                sBrushes[id].scale.y = - sBrushes[id].scale.y;
             }
             if(d == "LEFT" || d == "RIGHT") {
-                sBrushes[0].scale.x = - sBrushes[0].scale.x; 
+                sBrushes[id].scale.x = - sBrushes[id].scale.x; 
             }
             freeState(flipActions,d);
         }
@@ -677,12 +719,12 @@ function initPixi() {
 
 
 
-    function textureScale(dir) {
+    function textureScale(dir,id) {
 
         console.log("textureScale, dir", dir)
 
 
-        sBrushes[0].scale.x += dir * 0.001;
+        sBrushes[id].scale.x += dir * 0.001;
 
 
         // if(sBrushes[0].scale.x < sBrushes[0].maxScale){
@@ -697,7 +739,7 @@ function initPixi() {
         // }
 
 
-        sBrushes[0].scale.y = sBrushes[0].scale.x;
+        sBrushes[id].scale.y = sBrushes[id].scale.x;
 
 
         //sBrushes[0].scale.set(nscale)
@@ -770,86 +812,86 @@ function initPixi() {
 
         console.log("loadTools")
 
-        const graphics = new Graphics();
-        graphics.beginFill(cols_grey);
-        graphics.drawRect(0, 0, 80, wapp.H);
-        graphics.endFill();
+        // const graphics = new Graphics();
+        // graphics.beginFill(cols_grey);
+        // graphics.drawRect(0, 0, 80, wapp.H);
+        // graphics.endFill();
 
-        graphics.zIndex = 10
+        // graphics.zIndex = 10
 
-        //mC.addChild(graphics)
-
-
-        paintTool = new Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
-        paintTool.x = 12
-        paintTool.y = 25
-        paintTool.interactive = true
-        paintTool.zIndex = 11
+        // //mC.addChild(graphics)
 
 
-        paintTool.on("pointertap", () => {
+        // paintTool = new Text("Paint", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        // paintTool.x = 12
+        // paintTool.y = 25
+        // paintTool.interactive = true
+        // paintTool.zIndex = 11
 
-            _toolSelect("paint", 0, 0)
-            resetEditTool()
-        })
+
+        // paintTool.on("pointertap", () => {
+
+        //     _toolSelect("paint", 0, 0)
+        //     resetEditTool()
+        // })
 
         //mC.addChild(paintTool)
 
 
-        const editTool = new Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
-        editTool.x = 18
-        editTool.y = 25 * 4
-        editTool.interactive = true
-        editTool.zIndex = 11
+        // const editTool = new Text("Edit", { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' })
+        // editTool.x = 18
+        // editTool.y = 25 * 4
+        // editTool.interactive = true
+        // editTool.zIndex = 11
 
 
-        editTool.on("pointertap", () => {
+        // editTool.on("pointertap", () => {
 
-            _toolSelect("edit", 0, 75)
+        //     _toolSelect("edit", 0, 75)
 
-            console.log("editTool.on pointertap");
-
-
-            canvasItems.forEach(item => {
-
-                item.interactive = true
-                item.alpha = 0.2
-
-                item.on("pointertap", () => {
-
-                    canvasItems.map(x => x.alpha = 0.2)
-
-                    // if(editToolSelection != null){
-                    //     editToolSelection.removeAllListeners();
-                    // }
-
-                    editToolSelection = item;
-                    item.alpha = 1
-
-                    item
-                        .on('mousedown', (event) => {
-                            if (editToolSelection == item) {
-                                editToolSelectionData = vBrushes[0]
-                            }
-                        })
-
-                        .on('touchstart', (event) => {
-
-                        })
-
-                        .on('mouseup', onDragEnd)
-                        .on('mouseupoutside', onDragEnd)
-                        .on('touchend', onDragEnd)
-                        .on('touchendoutside', onDragEnd)
-
-                        .on('mousemove', onDragMove)
-
-                        .on('touchmove', onDragMove);
+        //     console.log("editTool.on pointertap");
 
 
-                })
-            });
-        })
+        //     canvasItems.forEach(item => {
+
+        //         item.interactive = true
+        //         item.alpha = 0.2
+
+        //         item.on("pointertap", () => {
+
+        //             canvasItems.map(x => x.alpha = 0.2)
+
+        //             // if(editToolSelection != null){
+        //             //     editToolSelection.removeAllListeners();
+        //             // }
+
+        //             editToolSelection = item;
+        //             item.alpha = 1
+
+        //             item
+        //                 .on('mousedown', (event) => {
+        //                     if (editToolSelection == item) {
+        //                         editToolSelectionData = vBrushes[0]
+        //                     }
+        //                 })
+
+        //                 .on('touchstart', (event) => {
+
+        //                 })
+
+        //                 .on('mouseup', onDragEnd)
+        //                 .on('mouseupoutside', onDragEnd)
+        //                 .on('touchend', onDragEnd)
+        //                 .on('touchendoutside', onDragEnd)
+
+        //                 .on('mousemove', onDragMove)
+
+        //                 .on('touchmove', onDragMove);
+
+
+        //         })
+        //     });
+        // })
 
         //mC.addChild(editTool)
 
@@ -1025,7 +1067,9 @@ function loadAssets() {
         console.log("onComplete: in", performance.result);
         loadingElMsg.innerHTML = "Loader complete in "+performance.result;
         const resources = loader.resources;
+
         addSprites(resources);
+
     });
 
 
@@ -1075,6 +1119,16 @@ function loadAssets() {
 }*/
 
 
+/*function addVBrush(n) {
+    const vBrush1 = Sprite.from("./assets/brushes/vBrush-"+n+".png"); //Sprite.from(textures[5])
+    vBrush1.zIndex = 1000000+n;
+    vBrush1.name = "vBrush"+n
+
+    vBrushes.push()
+}
+*/
+
+
 function setupStage() {
 
     console.log("setupStage");
@@ -1085,26 +1139,47 @@ function setupStage() {
     mC.sortableChildren = true
 
     paintingArea = new Graphics();
+
     paintingArea.beginFill(cols_blue1);
     paintingArea.drawRect(0, 0, wapp.W, wapp.H);
     paintingArea.endFill();
     paintingArea.zIndex = 1
     paintingArea.interactive = true
 
+
+    /* Virtual Brushes 
+
+        got numbers - 1, 2, 3, 4 ...
+
+    */
+
+
     vBrush1 = Sprite.from("./assets/brushes/vBrush-1.png"); //Sprite.from(textures[5])
-    vBrush1.zIndex = 10000000;
+    vBrush1.zIndex = 10000001;
     vBrush1.name = "vBrush1"
 
     vBrush2 = Sprite.from("./assets/brushes/vBrush-2.png"); //Sprite.from(textures[5])
-    vBrush2.zIndex = 10000001;
+    vBrush2.zIndex = 10000002;
     vBrush2.name = "vBrush2"
 
-    vBrushes.push(vBrush1,vBrush2)
+    vBrush3 = Sprite.from("./assets/brushes/vBrush-3.png"); //Sprite.from(textures[5])
+    vBrush3.zIndex = 10000003;
+    vBrush3.name = "vBrush3"
+
+    vBrush4 = Sprite.from("./assets/brushes/vBrush-4.png"); //Sprite.from(textures[5])
+    vBrush4.zIndex = 10000004;
+    vBrush4.name = "vBrush4"
+
+
+    vBrushes.push(vBrush1,vBrush2,vBrush3,vBrush4)
 
 
     window.vBrush1 = vBrush1;
     window.vBrush2 = vBrush2;
     window.vBrushes = vBrushes;
+
+
+    /* Brushes */
 
     sBrush1 = Sprite.from(textures[0])
 
@@ -1122,26 +1197,51 @@ function setupStage() {
     sBrush2.minScale = 0.1;
     sBrush2.maxScale = 2;
 
-    sBrushes.push(sBrush1,sBrush2)
+    sBrush3 = Sprite.from(textures[0])
 
+    sBrush3.zIndex = 50002;
+    sBrush3.scale.set(scale1 * 0.9)
+    sBrush3.anchor.set(0.5)
+    sBrush3.minScale = 0.1;
+    sBrush3.maxScale = 2;
+
+
+    sBrush4 = Sprite.from(textures[0])
+
+    sBrush4.zIndex = 50003;
+    sBrush4.scale.set(scale1 * 0.9)
+    sBrush4.anchor.set(0.5)
+    sBrush4.minScale = 0.1;
+    sBrush4.maxScale = 2;
+
+
+    sBrushes.push(sBrush1,sBrush2, sBrush3, sBrush4)
 
 
     window.sBrushes = sBrushes;
 
+
+
     paintingArea.on('pointertap', (pointer) => {
 
-        const { x, y } = vBrushes[0] //pointer.data.global
+
+        console.log('pointertap', pointer.data.global)
+
+        const { x, y, id } = vBrushes[currentID] //pointer.data.global
+
+
 
         if (selectedTool == "paint") { //  && x > 80+50
-            let svgItem = pop(selectedGraphic, x, y)
+            let svgItem = pop(selectedGraphic, x, y, id)
             canvasItems.push(svgItem)
         }
 
-        console.log("paintingArea.on('pointertap', (pointer), selectedTool", pointer, selectedTool)
+        //console.log("paintingArea.on('pointertap', (pointer), selectedTool", pointer, selectedTool, currentID)
+
 
     });
 
-    mC.addChild(paintingArea)
+    //mC.addChild(paintingArea)
 
 
 
